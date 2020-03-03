@@ -15,12 +15,12 @@ Automatically check for missing packages during build in Visual Studio
 ### Installing and Running the application
 
 Do git clone and build the solution locally. 
-To change the input data, edit file - *session_info.json*
+To change the input data, edit file - *session_info.json*.
 Run the application and view the output on console.
 
 ### Running the tests
 
-*TrainingSessionManagement.Test* is the test case project for the application
+**TrainingSessionManagement.Test** is the test case project for the application
 
 ## Business Logic
 
