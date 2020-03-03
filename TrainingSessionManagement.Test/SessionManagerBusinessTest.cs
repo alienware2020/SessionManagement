@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -12,14 +11,23 @@ namespace TrainingSessionManagement.Test
     public class SessionManagerBusinessTest
     {
         private ISessionManagerBusiness _sessionManagerBusiness;
-        private readonly Mock<IFileReader> _fileReaderMock;
+        private Mock<IFileReader> FileReaderMock { get; set; }
 
         public SessionManagerBusinessTest()
         {
-            _fileReaderMock = new Mock<IFileReader>();
-            _sessionManagerBusiness = new SessionManagerBusiness(_fileReaderMock.Object);
         }
 
+        [TestInitialize]
+        public void SessionManagerBusinessTestInitialize()
+        {
+            var mockRepository = new MockRepository(MockBehavior.Strict);
+            FileReaderMock = mockRepository.Create<IFileReader>();
+            _sessionManagerBusiness = new SessionManagerBusiness(FileReaderMock.Object);
+        }
+
+        /// <summary>
+        /// Test for input with single session
+        /// </summary>
         [TestMethod]
         public void TestSingleSession()
         {
@@ -31,7 +39,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 1"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 2);
@@ -42,6 +50,9 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("12:00 PM", sessions[1].StartTimeText);
         }
 
+        /// <summary>
+        /// Test for input with session duration add up to 180 minutes
+        /// </summary>
         [TestMethod]
         public void TestOnlyMorningSessions()
         {
@@ -68,7 +79,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 4"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 5);
@@ -81,6 +92,9 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("12:00 PM", sessions[4].StartTimeText);
         }
 
+        /// <summary>
+        /// Test for input with single session duration of 200 minutes
+        /// </summary>
         [TestMethod]
         public void TestSingleAfternoonSessions()
         {
@@ -92,7 +106,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 1"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 2);
@@ -102,6 +116,9 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("04:20 PM", sessions[1].StartTimeText);
         }
 
+        /// <summary>
+        /// Test for input with session duration > 240 minutes
+        /// </summary>
         [TestMethod]
         public void TestNoValidSessions()
         {
@@ -113,7 +130,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 1"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 1);
@@ -122,6 +139,9 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("250min", sessions[0].Duration);
         }
 
+        /// <summary>
+        /// Test for input with session duration add up to < 180 minutes
+        /// </summary>
         [TestMethod]
         public void TestOnlyIncompleteMorningSessions()
         {
@@ -148,7 +168,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 4"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 5);
@@ -161,6 +181,10 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("12:00 PM", sessions[4].StartTimeText);
         }
 
+        /// <summary>
+        /// Test for input with sessions that make incomplete morning slot 
+        /// i.e. no combination of sessions make 180 minutes
+        /// </summary>
         [TestMethod]
         public void TestIncompleteMorningSessionsWithAfternoonSessions()
         {
@@ -192,7 +216,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 5"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 1);
             Assert.IsTrue(tracks.First().Sessions.Count == 7);
@@ -208,6 +232,9 @@ namespace TrainingSessionManagement.Test
             Assert.AreEqual("04:00 PM", sessions[6].StartTimeText);
         }
 
+        /// <summary>
+        /// Test for input with sessions that span across 2 tracks
+        /// </summary>
         [TestMethod]
         public void TestTwoDayTracks()
         {
@@ -259,7 +286,7 @@ namespace TrainingSessionManagement.Test
                     SessionName = "Session 9"
                 }
             };
-            _fileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
+            FileReaderMock.Setup(fileReader => fileReader.GetInput(It.IsAny<string>())).Returns(input);
             var tracks = _sessionManagerBusiness.GetTracks();
             Assert.IsTrue(tracks.Count == 2);
             var sessions = tracks.First().Sessions;
